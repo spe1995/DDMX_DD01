@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8" />
+    <title>压力测试管理端</title>
+    <style>
+        /* 极简暗色科技风样式 */
+        body {background:#0d1117;color:#e6edf3;font-family:"Courier New",monospace;margin:0;}
+        .container {max-width:600px;margin:auto;padding:40px;}
+        input,select {width:100%;margin:6px 0;padding:8px;background:#161b22;color:#e6edf3;border:1px solid #30363d;}
+        button {padding:8px 16px;background:#238636;color:#fff;border:none;cursor:pointer;margin-top:10px;}
+        button:hover {background:#2ea043;}
+        pre {background:#161b22;padding:10px;overflow:auto;}
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>任务提交</h2>
+    <!-- 输入参数区域 -->
+    <label>目标地址（逗号分隔）</label>
+    <input id="targets" placeholder="a.com,b.com" />
+    <label>层级</label>
+    <select id="layer">
+        <option value="L4">L4</option>
+        <option value="L7" selected>L7</option>
+    </select>
+    <label>并发数</label>
+    <input id="concurrency" type="number" value="50" />
+    <label>持续时间(秒)</label>
+    <input id="duration" type="number" value="60" />
+    <label>攻击方法</label>
+    <input id="method" value="HTTP_Flood" />
+    <button onclick="submitTask()">提交任务</button>
+    <pre id="result"></pre>
+</div>
+<script>
+// 调用管理端 API 提交任务
+async function submitTask(){
+    try {
+        const resp = await fetch('/api/task/submit', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                targets: document.getElementById('targets').value.split(',').map(t=>t.trim()).filter(Boolean),
+                layer: document.getElementById('layer').value,
+                concurrency: parseInt(document.getElementById('concurrency').value),
+                duration: parseInt(document.getElementById('duration').value),
+                attack_method: document.getElementById('method').value
+            })
+        });
+        const data = await resp.json();
+        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    } catch (err) {
+        document.getElementById('result').textContent = '请求失败: ' + err;
+    }
+}
+</script>
+</body>
+</html>
